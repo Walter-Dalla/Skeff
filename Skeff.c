@@ -12,21 +12,29 @@ long double toNumber(char * string);
 long double inicializeExpression(char * string);
 
 
-typedef struct Node{
+typedef struct NodeForNumber{
     
-    struct Node * nextNode;
-    struct Node * previusNode;
-
+    struct NodeForNumber * nextNode;
+    struct NodeForNumber * previusNode;
     long double number;
-    char character;
+    int position;
 
-} node;
+} nodeForNumber;
 
-node* insertNode(node* nodeArg, long double valueNumber, char valueChar){
+
+typedef struct NodeForChar{
     
-    node * newNode = malloc(sizeof(node));
+    struct NodeForChar * nextNode;
+    struct NodeForChar * previusNode;
+    char character;
+    int position;
+
+} nodeForChar;
+
+nodeForNumber* insertNodeForNumber(nodeForNumber* nodeArg, long double valueNumber){
+    
+    nodeForNumber * newNode = malloc(sizeof(nodeForNumber));
     newNode->number = valueNumber;
-    newNode->character = valueChar;
     newNode->nextNode = nodeArg;
     newNode->previusNode = NULL;
     /* verifica se lista não está vazia */
@@ -37,8 +45,57 @@ node* insertNode(node* nodeArg, long double valueNumber, char valueChar){
     return newNode;
 }
 
-node* searchNode (node* nodeArg, char value){
-    node* nodeAUX;
+
+
+nodeForChar* insertNodeForChar(nodeForChar* nodeArg, char characterArg){
+    
+    nodeForChar * newNode = malloc(sizeof(nodeForChar));
+    newNode->character = characterArg;
+    newNode->nextNode = nodeArg;
+    newNode->previusNode = NULL;
+    /* verifica se lista não está vazia */
+
+    if (nodeArg != NULL)
+        nodeArg->previusNode = newNode;
+
+    return newNode;
+}
+
+
+nodeForNumber* searchNodeForNumberByPosition (nodeForNumber* nodeArg, int position){
+    nodeForNumber* nodeAUX;
+    for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode)
+        if (nodeAUX -> position == position)
+            return nodeAUX;
+    return NULL; /* não achou o elemento */
+}
+
+
+
+nodeForNumber* searchNodeForNumber (nodeForNumber* nodeArg, long int value){
+    nodeForNumber* nodeAUX;
+    for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode)
+        if (nodeAUX -> number == value)
+            return nodeAUX;
+    return NULL; /* não achou o elemento */
+}
+
+
+
+
+nodeForChar* searchNodeForCharByPosition (nodeForChar* nodeArg, int position){
+    nodeForChar* nodeAUX;
+    for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode)
+        if (nodeAUX -> position == position)
+            return nodeAUX;
+    return NULL; /* não achou o elemento */
+}
+
+
+
+
+nodeForChar* searchNodeForChar (nodeForChar* nodeArg, char value){
+    nodeForChar* nodeAUX;
     for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode)
         if (nodeAUX -> character == value)
             return nodeAUX;
@@ -46,10 +103,12 @@ node* searchNode (node* nodeArg, char value){
 }
 
 
-node* removeNode (node* nodeArg, int v){
-    node* nodeAUX = searchNode(nodeArg,v);
-    if (nodeAUX == NULL)
+
+nodeForNumber* removeNodeByNumber (nodeForNumber* nodeArg, long double value){
+        nodeForNumber* nodeAUX = searchNodeForNumber(nodeArg,value);
+    if (nodeAUX == NULL){
         return nodeArg; //não achou o elemento : retorna lista inalterada
+    }
     /* retira elemento do encadeamento */
     if (nodeArg == nodeAUX)
         nodeArg = nodeAUX->nextNode;
@@ -64,13 +123,25 @@ node* removeNode (node* nodeArg, int v){
     return nodeArg;
 }
 
-
-void printNode(node * nodeArg){
-    while(nodeArg->nextNode != NULL){
-        printf(" %Lf\n", nodeArg->number);
-        nodeArg = nodeArg->nextNode;
+nodeForChar* removeNodeByChar (nodeForChar* nodeArg, char value){
+        nodeForChar* nodeAUX = searchNodeForChar(nodeArg,value);
+    if (nodeAUX == NULL){
+        return nodeArg; //não achou o elemento : retorna lista inalterada
     }
+    /* retira elemento do encadeamento */
+    if (nodeArg == nodeAUX)
+        nodeArg = nodeAUX->nextNode;
+    else
+        nodeAUX ->previusNode->nextNode = nodeAUX->nextNode;
+
+    if (nodeAUX->nextNode != NULL)
+        nodeAUX->nextNode->previusNode = nodeAUX->previusNode;
+    
+    free(nodeAUX);
+    
+    return nodeArg;
 }
+
 
 // long double expression(char * string){
 
@@ -162,6 +233,25 @@ int isSignal(char character){
 
 
 long double expression(char * string, long double result){
+
+    // nodeForNumber * listOfNumber = NULL;
+    // nodeForChar * listOfChar = NULL;
+
+
+    // while(*string != '\0'){
+    //     if(isNumber(*string)){
+    //         listOfNumber = insertNodeForNumber(listOfNumber, toNumber(string));
+    //         while(isNumber(string)){
+    //             string++;
+    //         }
+    //     }else{
+    //         listOfChar = insertNodeForChar(listOfChar, *string);
+    //         string++;
+    //     }
+    // }
+
+
+
 
     if(isSignal(*string) == 1){ // + ou -
         result = sunAndSub(string, result);
@@ -265,34 +355,36 @@ long double toNumber(char * string){
 
 long double inicializeExpression(char * string){
     long double result;
+    
     result = expression(string, 0);
     return result;
 }
 
 int main(int argc, char const *argv[])
 {
+    char* string = "-10";
     int cont = 0;
-    node* nodeJs;
+    nodeForNumber* nodeJs;
 
-
-    for(cont = 0; cont < 127; cont++){
-        nodeJs = insertNode(nodeJs, cont, 'a');
-        //printf("%d\n", cont);
+    for(cont = 0; cont < 30; cont++){
+        nodeJs = insertNodeForNumber(nodeJs, cont);
     }
 
-    printNode(nodeJs);
+    cont = 0;
+    for(cont = 0; cont < 29; cont++){
+        nodeJs = removeNodeByNumber(nodeJs, cont);
+        printf("cont : %d\n", cont);
+    }
+
+    
+    printf("%Lf\n", inicializeExpression(string));
 
 
-    // char * expressao = "+10"; 
-
-    // printf("%Lf\n", inicializeExpression(expressao));
-
-
-    // expressao = "10 * 10";
-    // printf("%Lf\n", inicializeExpression(expressao));
+    // string = "10 * 10";
+    // printf("%Lf\n", inicializeExpression(string));
 
 
     // long double numeber = toNumber("10.44");
     // printf("Number: %Lf\n", numeber);
-    // return 0;
+    return 0;
 }
