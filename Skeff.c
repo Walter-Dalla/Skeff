@@ -5,7 +5,7 @@ int getLengthString(char * string);
 long double teste(char * string);
 int isNumber(char  character);
 int isSignal(char  character);
-long double expression(char * string, long double result);
+long double expression(char * string);
 long double multAndDiv(char * string, long double result);
 long double sunAndSub(char * string, long double result);
 long double toNumber(char * string);
@@ -31,11 +31,12 @@ typedef struct NodeForChar{
 
 } nodeForChar;
 
-nodeForNumber* insertNodeForNumber(nodeForNumber* nodeArg, long double valueNumber){
+nodeForNumber* insertNodeForNumber(nodeForNumber* nodeArg, long double valueNumber, int position){
     
     nodeForNumber * newNode = malloc(sizeof(nodeForNumber));
     newNode->number = valueNumber;
     newNode->nextNode = nodeArg;
+    newNode->position = position;
     newNode->previusNode = NULL;
     /* verifica se lista não está vazia */
 
@@ -47,11 +48,12 @@ nodeForNumber* insertNodeForNumber(nodeForNumber* nodeArg, long double valueNumb
 
 
 
-nodeForChar* insertNodeForChar(nodeForChar* nodeArg, char characterArg){
+nodeForChar* insertNodeForChar(nodeForChar* nodeArg, char characterArg, int position){
     
     nodeForChar * newNode = malloc(sizeof(nodeForChar));
     newNode->character = characterArg;
     newNode->nextNode = nodeArg;
+    newNode->position = position;
     newNode->previusNode = NULL;
     /* verifica se lista não está vazia */
 
@@ -104,8 +106,8 @@ nodeForChar* searchNodeForChar (nodeForChar* nodeArg, char value){
 
 
 
-nodeForNumber* removeNodeByNumber (nodeForNumber* nodeArg, long double value){
-        nodeForNumber* nodeAUX = searchNodeForNumber(nodeArg,value);
+nodeForNumber* removeNodeForNumberByPosition (nodeForNumber* nodeArg, int position){
+        nodeForNumber* nodeAUX = searchNodeForNumber(nodeArg,position);
     if (nodeAUX == NULL){
         return nodeArg; //não achou o elemento : retorna lista inalterada
     }
@@ -123,8 +125,8 @@ nodeForNumber* removeNodeByNumber (nodeForNumber* nodeArg, long double value){
     return nodeArg;
 }
 
-nodeForChar* removeNodeByChar (nodeForChar* nodeArg, char value){
-        nodeForChar* nodeAUX = searchNodeForChar(nodeArg,value);
+nodeForChar* removeNodeForCharByPosition (nodeForChar* nodeArg, int position){
+        nodeForChar* nodeAUX = searchNodeForChar(nodeArg,position);
     if (nodeAUX == NULL){
         return nodeArg; //não achou o elemento : retorna lista inalterada
     }
@@ -232,33 +234,70 @@ int isSignal(char character){
 
 
 
-long double expression(char * string, long double result){
+long double expression(char * string){
 
-    // nodeForNumber * listOfNumber = NULL;
-    // nodeForChar * listOfChar = NULL;
+    nodeForNumber * listOfNumber = NULL;
 
+    nodeForChar * listOfChar = NULL;
 
-    // while(*string != '\0'){
-    //     if(isNumber(*string)){
-    //         listOfNumber = insertNodeForNumber(listOfNumber, toNumber(string));
-    //         while(isNumber(string)){
-    //             string++;
-    //         }
-    //     }else{
-    //         listOfChar = insertNodeForChar(listOfChar, *string);
-    //         string++;
-    //     }
-    // }
+    nodeForNumber * listOfNumberAux1 = NULL;
+    nodeForNumber * listOfNumberAux2 = NULL;
+    nodeForChar * listOfCharAux = NULL;
 
+    int cont;
+    int positionNumber = 0;
+    int positionChar = 0;
+    int stringLength = getLengthString(string);
+    long double result = 0;
 
+    /*
+     *Aloca a string dentro das listas dinamicas
+     * 
+     */
+    listOfNumber = insertNodeForNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
+    for(cont = 0; cont < stringLength ; cont++){
 
-
-    if(isSignal(*string) == 1){ // + ou -
-        result = sunAndSub(string, result);
-    }else if(isSignal(*string) == 2){ // * ou /
-        result = multAndDiv(string, result);
+        if(isNumber(string[cont])){
+            listOfNumber = insertNodeForNumber(listOfNumber, toNumber(string+cont), positionNumber++);
+            while(isNumber(string[cont])){
+                cont++;
+            }
+        }else{
+            listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
+        }
+        
     }
-    return result;
+    for(cont = 0; cont < positionChar; cont++){
+        listOfCharAux = searchNodeForChar(listOfChar, '*');
+        if (listOfCharAux != NULL){
+        listOfNumberAux1 = searchNodeForNumberByPosition(listOfNumber, listOfCharAux->position);
+        listOfNumberAux2 = searchNodeForNumberByPosition(listOfNumber, listOfCharAux->position+2);
+            listOfNumberAux1->number = listOfNumberAux1->number * listOfNumberAux2->number;
+            removeNodeForCharByPosition(listOfChar, listOfChar->position);
+            removeNodeForNumberByPosition(listOfNumber, listOfNumberAux2->position);
+        }
+    }
+
+    for(cont = 0; cont < positionChar; cont++){
+        listOfCharAux = searchNodeForChar(listOfChar, '+');
+        if (listOfCharAux != NULL){
+            listOfNumberAux1 = searchNodeForNumberByPosition(listOfNumber, listOfCharAux->position);
+            listOfNumberAux2 = listOfNumberAux1->previusNode;
+            printf("%Lf + %Lf = %Lf",listOfNumberAux1->number, listOfNumberAux2->number, listOfNumberAux1->number + listOfNumberAux2->number );
+            listOfNumberAux1->number = listOfNumberAux1->number + listOfNumberAux2->number;
+            
+            removeNodeForCharByPosition(listOfChar, listOfCharAux->position);
+            removeNodeForNumberByPosition(listOfNumber, listOfNumberAux2->position);
+        }
+    }
+    
+
+    // if(isSignal(*string) == 1){ // + ou -
+    //     result = sunAndSub(string, result);
+    // }else if(isSignal(*string) == 2){ // * ou /
+    //     result = multAndDiv(string, result);
+    // }
+    return listOfNumber->number;
 
 }
 
@@ -356,25 +395,13 @@ long double toNumber(char * string){
 long double inicializeExpression(char * string){
     long double result;
     
-    result = expression(string, 0);
+    result = expression(string);
     return result;
 }
 
 int main(int argc, char const *argv[])
 {
-    char* string = "-10";
-    int cont = 0;
-    nodeForNumber* nodeJs;
-
-    for(cont = 0; cont < 30; cont++){
-        nodeJs = insertNodeForNumber(nodeJs, cont);
-    }
-
-    cont = 0;
-    for(cont = 0; cont < 29; cont++){
-        nodeJs = removeNodeByNumber(nodeJs, cont);
-        printf("cont : %d\n", cont);
-    }
+    char* string = "22+10";
 
     
     printf("%Lf\n", inicializeExpression(string));
