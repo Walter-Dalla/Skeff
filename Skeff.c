@@ -22,14 +22,14 @@ typedef struct NodeNumber{
 } nodeNumber;
 
 
-typedef struct NodeForChar{
+typedef struct NodeChar{
     
-    struct NodeForChar * nextNode;
-    struct NodeForChar * previusNode;
+    struct NodeChar * nextNode;
+    struct NodeChar * previusNode;
     char character;
     int position;
 
-} nodeForChar;
+}  nodeChar;
 
 nodeNumber* insertNodeNumber(nodeNumber* nodeArg, long double valueNumber, int position){
     
@@ -48,9 +48,9 @@ nodeNumber* insertNodeNumber(nodeNumber* nodeArg, long double valueNumber, int p
 
 
 
-nodeForChar* insertNodeForChar(nodeForChar* nodeArg, char characterArg, int position){
+ nodeChar* insertNodeForChar( nodeChar* nodeArg, char characterArg, int position){
     
-    nodeForChar * newNode = malloc(sizeof(nodeForChar));
+     nodeChar * newNode = malloc(sizeof( nodeChar));
     newNode->character = characterArg;
     newNode->nextNode = nodeArg;
     newNode->position = position;
@@ -65,14 +65,11 @@ nodeForChar* insertNodeForChar(nodeForChar* nodeArg, char characterArg, int posi
 
 
 nodeNumber* searchNodeNumberByPosition (nodeNumber* nodeArg, int position){
-    printf("Se é loiro bixo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    /*
     nodeNumber* nodeAUX = NULL;
     for (nodeAUX = nodeArg; nodeAUX->nextNode != NULL; nodeAUX = nodeAUX -> nextNode)
         if (nodeAUX -> position == position)
             return nodeAUX;
     return NULL; /* não achou o elemento */
-    return NULL;
 }
 
 
@@ -88,22 +85,37 @@ nodeNumber* searchNodeNumber (nodeNumber* nodeArg, long int value){
 
 
 
-nodeForChar* searchNodeForCharByPosition (nodeForChar* nodeArg, int position){
-    nodeForChar* nodeAUX;
-    for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode)
-        if (nodeAUX -> position == position)
+ nodeChar* searchNodeForCharByPosition ( nodeChar* nodeArg, int position){
+    nodeChar* nodeAUX;
+    nodeAUX = nodeArg;
+    while(nodeAUX->previusNode != NULL){
+        nodeAUX = nodeAUX->nextNode;
+    }
+
+    for (; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode){
+        if (nodeAUX -> position == position){
             return nodeAUX;
+        }
+    }
     return NULL; /* não achou o elemento */
 }
 
 
 
 
-nodeForChar* searchNodeForChar (nodeForChar* nodeArg, char value){
-    
-    nodeForChar* nodeAUX;
-    for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode){
+ nodeChar* searchNodeForChar ( nodeChar* nodeArg, char value){
+    nodeChar* nodeAUX = NULL;
+    nodeAUX = nodeArg;
+
+
+    while(nodeAUX -> nextNode != NULL){
+        nodeAUX = nodeAUX->nextNode;
+    }
+    printf("TESTE %d\n", nodeAUX->position);
+
+    for (; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode){
         if (nodeAUX -> character == value){
+            printf("Achou na pos %d\n", nodeAUX -> position);
             return nodeAUX;
         }
     }
@@ -114,7 +126,6 @@ nodeForChar* searchNodeForChar (nodeForChar* nodeArg, char value){
 
 nodeNumber* removeNodeNumberByPosition (nodeNumber* nodeArg, int position){
         nodeNumber* nodeAUX = searchNodeNumberByPosition(nodeArg, position);
-        printf(":::::::::::%d::::::::::::::::\n",position);
     if (nodeAUX == NULL){
         return nodeArg; //não achou o elemento : retorna lista inalterada
     }
@@ -128,12 +139,13 @@ nodeNumber* removeNodeNumberByPosition (nodeNumber* nodeArg, int position){
         nodeAUX->nextNode->previusNode = nodeAUX->previusNode;
     
     free(nodeAUX);
-    printf("deu free msm===========================================================================================");
     return nodeArg;
 }
 
-nodeForChar* removeNodeForCharByPosition (nodeForChar* nodeArg, int position){
-        nodeForChar* nodeAUX = searchNodeForChar(nodeArg,position);
+ nodeChar* removeNodeForCharByPosition ( nodeChar* nodeArg, int position){
+         nodeChar* nodeAUX = searchNodeForChar(nodeArg,position);
+
+         
     if (nodeAUX == NULL){
         return nodeArg; //não achou o elemento : retorna lista inalterada
     }
@@ -174,9 +186,19 @@ nodeForChar* removeNodeForCharByPosition (nodeForChar* nodeArg, int position){
 
 void printNodeNumber(nodeNumber * nodeNumberArg){
     while(nodeNumberArg != NULL){
-        printf("===========================================\n");
-        printf("Posiçao do node: %d    \nNumero Do Node: %Lf\n",nodeNumberArg->position,(double) nodeNumberArg->number );
+        printf("=====================================\n");
+        printf("Posiçao do node: %d    \nNumero Do Node: %Lf\n",nodeNumberArg->position, nodeNumberArg->number );
         nodeNumberArg = nodeNumberArg->nextNode;
+
+    }
+}
+
+
+void printNodeChar(nodeChar * nodeCharArg){
+    while(nodeCharArg != NULL){
+        printf("=====================================\n");
+        printf("Posiçao do node: %d    \nChar Do Node: %c\n",nodeCharArg->position, nodeCharArg->character );
+        nodeCharArg = nodeCharArg->nextNode;
 
     }
 }
@@ -253,11 +275,9 @@ long double expression(char * string){
 
     nodeNumber * listOfNumber = NULL;
 
-    nodeForChar * listOfChar = NULL;
+     nodeChar * listOfChar = NULL;
 
-    nodeNumber * listOfNumberAux1 = NULL;
-    nodeNumber * listOfNumberAux2 = NULL;
-    nodeForChar * listOfCharAux = NULL;
+     nodeChar * listOfCharAux = NULL;
     
 
     int cont;
@@ -272,7 +292,6 @@ long double expression(char * string){
      */
     listOfNumber = insertNodeNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
     for(cont = 0; cont < stringLength ; cont++){
-        printf("cont = %d\n", cont);
         if(isNumber(string[cont])){
             listOfNumber = insertNodeNumber(listOfNumber, toNumber(string+cont), positionNumber++);
             while(isNumber(string[cont])){
@@ -284,30 +303,29 @@ long double expression(char * string){
             listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
         }
     }
-
+    printNodeChar(listOfChar);
+    printf("\n\n");
     printNodeNumber(listOfNumber);
     printf("\n\n\n\n\n\n\nParte da soma\n");
-    for(cont = 0; cont < positionChar-2; cont++){
-        nodeForChar * listOfCharAux = searchNodeForChar(listOfChar, '+');
-        continue;
+    for(cont = 0; cont < 1; cont++){
+        nodeChar * listOfCharAux = searchNodeForChar(listOfChar, '+');
         if (listOfCharAux != NULL){
-            listOfNumberAux1 = searchNodeNumberByPosition(listOfNumber, listOfCharAux->position);
-            listOfNumberAux2 = listOfNumberAux1->previusNode;
+            printf("error %d", cont+1);
+            nodeNumber* listOfNumberAux1 = searchNodeNumberByPosition(listOfNumber, listOfCharAux->position);
+            nodeNumber* listOfNumberAux2 = listOfNumberAux1->previusNode;
+
+            printf("listOfNumberAux1 = %Lf   listOfNumberAux2 = %Lf\n", listOfNumberAux1->number, listOfNumberAux2->number);
+            listOfNumberAux2->number = listOfNumberAux1->number + listOfNumberAux2->number;
+
+            listOfChar = removeNodeForCharByPosition(listOfChar, listOfCharAux->position);
+            printf("Destruindo posicao %d\n",listOfNumberAux2->position);
+            listOfNumber = removeNodeNumberByPosition(listOfNumber, listOfNumberAux2->position);
             
-            printf("listOfNumberAux1 = %Lf\n", listOfNumberAux1->number);
-            printf("listOfNumberAux2 = %Lf\n", listOfNumberAux2->number);
-            listOfNumberAux1->number = listOfNumberAux1->number + listOfNumberAux2->number;
-            removeNodeForCharByPosition(listOfChar, listOfCharAux->position);
-            removeNodeNumberByPosition(listOfNumber, listOfNumberAux2->position);
         }
+        
     }
     printf("\n\n\n\n\n\n\nResultado\n");
 
-    // if(isSignal(*string) == 1){ // + ou -
-    //     result = sunAndSub(string, result);
-    // }else if(isSignal(*string) == 2){ // * ou /
-    //     result = multAndDiv(string, result);
-    // }
 
     printNodeNumber(listOfNumber);
 
@@ -415,10 +433,35 @@ long double inicializeExpression(char * string){
 
 int main(int argc, char const *argv[])
 {
-    char* string = "22+1";
+    char* string = "10+11+12";
 
     
-    //printf("%Lf\n",(double) inicializeExpression(string));
+    printf("%Lf\n",  inicializeExpression(string));
+
+
+    // nodeNumber * teste = NULL;
+    // int cont =0;
+
+    // for(cont = 0; cont < 5; cont++)
+    //     teste = insertNodeNumber(teste, cont, cont);
+
+    // printNodeNumber(teste);
+
+    // printf("O inicio da fila é em %d\n\n\n\n\n",teste->position);
+
+
+
+    // for(cont = 0; cont < 5; cont++)
+    //     teste = removeNodeNumberByPosition(teste,  cont);
+
+    // printNodeNumber(teste);
+
+    // printf("O inicio da fila é em %d\n",teste->position);
+
+
+
+
+
 
     // string = "10 * 10";
     // printf("%Lf\n", inicializeExpression(string));
