@@ -286,57 +286,6 @@ long double toNumber(char * string){
 }
 
 
-// long double expression(char * string){
-
-//     nodeNumber * listOfNumber = NULL;
-
-//     nodeChar * listOfChar = NULL;
-
-//     nodeChar * listOfCharAux = NULL;
-    
-
-//     int cont;
-//     int positionNumber = 1;
-//     int positionChar = 2;
-//     int stringLength = getLengthString(string);
-//     long double result = 0;
-
-//     /*
-//      *Aloca a string dentro das listas dinamicas
-//      * 
-//      */
-//     listOfNumber = insertNodeNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
-//     for(cont = 0; cont < stringLength ; cont++){
-//         if(isNumber(string[cont])){
-//             listOfNumber = insertNodeNumber(listOfNumber, toNumber(string+cont), positionNumber++);
-//             while(isNumber(string[cont])){
-//                 cont++;
-//             }
-//             cont--;//para corrigir o cont pois o while retorna um cont a mais
-//         }else{
-//             if(isSignal(string[cont]))
-//             listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
-//         }
-//     }
-//     //listOfNumber = insertNodeNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
-//     printNodeNumber(listOfNumber);
-    
-//     for(cont = 0; cont < positionChar-2; cont++){
-//         nodeChar * listOfCharAux = searchNodeForChar(listOfChar, '+');
-//         if (listOfCharAux != NULL){
-//             nodeNumber* listOfNumberAux1 = searchNodeNumberByPosition(listOfNumber, listOfCharAux->position);
-//             nodeNumber* listOfNumberAux2 = listOfNumberAux1->previusNode;
-//             listOfNumberAux2->number = listOfNumberAux1->number + listOfNumberAux2->number;
-//             listOfChar = removeNodeForCharByPosition(listOfChar, listOfCharAux->position);
-//             listOfNumber = removeNodeNumberByPosition(listOfNumber, listOfNumberAux1->position);
-            
-//         }
-        
-//     }
-
-//     return listOfNumber->number;
-
-// }
 
 long double expression(char * string){
 
@@ -366,35 +315,63 @@ long double expression(char * string){
             }
             cont--;//para corrigir o cont pois o while retorna um cont a mais
         }else{
-            if(isSignal(string[cont]))
+            if(isSignal(string[cont]) != 0)
             listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
         }
     }
     
-    
-    printNodeNumber(listOfNumber);
+    //printNodeNumber(listOfNumber);
     
     for(cont = 0; cont < positionChar-2; cont++){
-        nodeChar * listOfCharAux = searchNodeForChar(listOfChar, '+');
+        nodeChar * listOfCharAux = searchNodeForChar(listOfChar, listOfChar->character);
         if (listOfCharAux != NULL){
             nodeNumber* listOfNumberAux1 = searchNodeNumberByPosition(listOfNumber, listOfCharAux->position);
+            if(listOfNumberAux1 == NULL)
+                continue;
+            if(listOfNumberAux1->previusNode == NULL){
+                listOfNumber = insertNodeNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
+            }
             nodeNumber* listOfNumberAux2 = listOfNumberAux1->previusNode;
-            listOfNumberAux2->number = listOfNumberAux1->number + listOfNumberAux2->number;
+
+            ///rintf("listOfNumberAux1 = %Lf .. listOfNumberAux2 = %Lf", listOfNumberAux1->number, listOfNumberAux2->number);
+
+            switch (listOfCharAux -> character ){
+                
+                case('*'):
+                    listOfNumberAux2->number = listOfNumberAux1->number * listOfNumberAux2->number;
+                    break;
+
+                case('/'):
+                    if(listOfNumberAux2->number != 0)
+                        listOfNumberAux2->number = listOfNumberAux1->number / listOfNumberAux2->number;
+                    else 
+                        listOfNumberAux2->number = 0;
+                    break;
+
+                case('+'):
+                    listOfNumberAux2->number = listOfNumberAux1->number + listOfNumberAux2->number;
+                    break;
+
+                case('-'):
+                    listOfNumberAux2->number = listOfNumberAux1->number - listOfNumberAux2->number;
+                    break;
+
+                case('^'):
+                    listOfNumberAux2->number = listOfNumberAux1->number * listOfNumberAux2->number;
+                    break;
+
+            }
+
             listOfChar = removeNodeForCharByPosition(listOfChar, listOfCharAux->position);
             listOfNumber = removeNodeNumberByPosition(listOfNumber, listOfNumberAux1->position);
             
         }
         
     }
-    listOfNumber = insertNodeNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
-    printNodeNumber(listOfNumber);
-
-    //if(listOfNumber->position != NULL)
-       // return listOfNumber->nextNode->number;
 
     return listOfNumber->number;
-}
 
+}
 
 long double inicializeExpression(char * string){
     long double result;
@@ -405,9 +382,18 @@ long double inicializeExpression(char * string){
 
 int main(int argc, char const *argv[])
 {
-    char* string = "+22"; // = 34
-    
-    printf("%Lf\n",  inicializeExpression(string));
+    char* string = "3+2+1";
+    printf("%s = %Lf\n", string,  inicializeExpression(string));
+
+    string = "2-3";
+    printf("%s = %Lf\n", string,  inicializeExpression(string));
+
+    string = "3*2";
+    printf("%s = %Lf\n", string,  inicializeExpression(string));
+
+    string = "3/2";
+    printf("%s = %Lf\n", string,  inicializeExpression(string));
+
 
     return 0;
 }
