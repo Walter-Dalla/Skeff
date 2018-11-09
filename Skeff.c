@@ -36,13 +36,6 @@ typedef struct NodeChar{
 }  nodeChar;
 
 
-typedef struct NodeNumberAndChar{
-    
-    nodeChar * listOfNodeChar;
-    nodeNumber * listOfNodeNumber;
-
-}  nodeNumberAndChar;
-
 /*
  * Metodos para trabalhar com as listas
  */
@@ -91,15 +84,6 @@ nodeNumber* searchNodeNumberByPosition (nodeNumber* nodeArg, int position){
             return nodeAUX;
     return NULL; /* não achou o elemento */
 }
-//Por valor
-nodeNumber* searchNodeNumber (nodeNumber* nodeArg, long int value){
-    nodeNumber* nodeAUX;
-    for (nodeAUX = nodeArg; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode)
-        if (nodeAUX -> number == value)
-            return nodeAUX;
-    return NULL; /* não achou o elemento */
-}
-
 
 //Por posicao
 nodeChar* searchNodeForCharByPosition ( nodeChar* nodeArg, int position){
@@ -127,8 +111,7 @@ nodeChar* searchNodeForChar ( nodeChar* nodeArg, char value){
     while(nodeAUX -> nextNode != NULL){
         nodeAUX = nodeAUX->nextNode;
     }
-
-    for (; nodeAUX != NULL; nodeAUX = nodeAUX -> nextNode){
+    for (; nodeAUX != NULL; nodeAUX = nodeAUX -> previusNode){
         if (nodeAUX -> character == value){
             return nodeAUX;
         }
@@ -256,6 +239,18 @@ int isSignal(char character){
     return 0;
 }
 
+
+int getNumberOfPrimarySignals(nodeChar* nodeCharArg){
+    int result = 0;
+    while(nodeCharArg != NULL){
+        if(nodeCharArg -> character == '*'||nodeCharArg -> character == '/')   
+            result++;
+        nodeCharArg = nodeCharArg->nextNode;
+    }
+    return result;
+}
+
+
 /*
  * Retorna o numero que a string representa
  * retorno (Long Double): numero que a string representa;
@@ -293,13 +288,11 @@ long double expression(char * string){
 
     nodeChar * listOfChar = NULL;
 
-    nodeChar * listOfCharAux = NULL;
-    
-
     int cont;
     int positionNumber = 1;
     int positionChar = 2;
     int stringLength = getLengthString(string);
+    int numberOfPrimarySignals = 0;
     long double result = 0;
 
     /*
@@ -319,11 +312,21 @@ long double expression(char * string){
             listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
         }
     }
-    
-    //printNodeNumber(listOfNumber);
-    
+
+
+    numberOfPrimarySignals =  getNumberOfPrimarySignals(listOfChar);
     for(cont = 0; cont < positionChar-2; cont++){
-        nodeChar * listOfCharAux = searchNodeForChar(listOfChar, listOfChar->character);
+        nodeChar * listOfCharAux = NULL;
+
+        if(cont < numberOfPrimarySignals){
+            listOfCharAux = searchNodeForChar(listOfChar, '*');
+            if(listOfCharAux == NULL)
+                listOfCharAux = searchNodeForChar(listOfChar, '/');
+        }
+        else{
+            listOfCharAux = searchNodeForChar(listOfChar, listOfChar->character);
+        }
+        
         if (listOfCharAux != NULL){
             nodeNumber* listOfNumberAux1 = searchNodeNumberByPosition(listOfNumber, listOfCharAux->position);
             if(listOfNumberAux1 == NULL)
@@ -332,8 +335,6 @@ long double expression(char * string){
                 listOfNumber = insertNodeNumber(listOfNumber, 0, positionNumber++);// iniciar a lista
             }
             nodeNumber* listOfNumberAux2 = listOfNumberAux1->previusNode;
-
-            ///rintf("listOfNumberAux1 = %Lf .. listOfNumberAux2 = %Lf", listOfNumberAux1->number, listOfNumberAux2->number);
 
             switch (listOfCharAux -> character ){
                 
@@ -382,18 +383,9 @@ long double inicializeExpression(char * string){
 
 int main(int argc, char const *argv[])
 {
-    char* string = "3+2+1";
-    printf("%s = %Lf\n", string,  inicializeExpression(string));
-
-    string = "2-3";
-    printf("%s = %Lf\n", string,  inicializeExpression(string));
-
-    string = "3*2";
-    printf("%s = %Lf\n", string,  inicializeExpression(string));
-
-    string = "3/2";
-    printf("%s = %Lf\n", string,  inicializeExpression(string));
-
+    int result = 10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10;
+    char* string = "10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10";
+    printf("%s = %Lf porem o result real eh : %d\n", string,  inicializeExpression(string), result);
 
     return 0;
 }
