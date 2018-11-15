@@ -281,6 +281,23 @@ long double toNumber(char * string){
 }
 
 
+void test(int size, char* string, int position){
+    char string_[size];
+    int cont = 0;
+    
+    for(cont = 0; string[cont] != ')'|| cont < 10 ; cont++){
+        string_[cont] = string[cont+position];
+    }
+    string_[cont] = '\n';
+
+    for(cont = 0; string[cont] != ')' ; cont++){
+        printf("String_ = %c\n", string_[cont]);
+    }
+
+    long double aa = expression(string_);
+    printf("Result = %Lf\n", aa);
+}
+
 
 long double expression(char * string){
 
@@ -293,6 +310,7 @@ long double expression(char * string){
     int positionChar = 2;
     int stringLength = getLengthString(string);
     int numberOfPrimarySignals = 0;
+    char* string_;
     long double result = 0;
 
     /*
@@ -303,28 +321,38 @@ long double expression(char * string){
     for(cont = 0; cont < stringLength ; cont++){
         if(isNumber(string[cont])){
             listOfNumber = insertNodeNumber(listOfNumber, toNumber(string+cont), positionNumber++);
-            while(isNumber(string[cont])){
+            while(isNumber(string[cont])|| string[cont] == '.'){
                 cont++;
             }
             cont--;//para corrigir o cont pois o while retorna um cont a mais
         }else{
             if(isSignal(string[cont]) != 0)
-            listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
+                listOfChar = insertNodeForChar(listOfChar, string[cont], positionChar++);
+            else
+                listOfChar = insertNodeForChar(listOfChar, string[cont], cont);
         }
     }
 
-
+    
+    
     numberOfPrimarySignals =  getNumberOfPrimarySignals(listOfChar);
     for(cont = 0; cont < positionChar-2; cont++){
         nodeChar * listOfCharAux = NULL;
 
-        if(cont < numberOfPrimarySignals){
-            listOfCharAux = searchNodeForChar(listOfChar, '*');
-            if(listOfCharAux == NULL)
-                listOfCharAux = searchNodeForChar(listOfChar, '/');
+        listOfCharAux = searchNodeForChar(listOfChar, '(');
+
+        if(listOfCharAux == NULL){
+            if(cont < numberOfPrimarySignals){
+                listOfCharAux = searchNodeForChar(listOfChar, '*');
+                if(listOfCharAux == NULL)
+                    listOfCharAux = searchNodeForChar(listOfChar, '/');
+            }
+            else{
+                listOfCharAux = searchNodeForChar(listOfChar, listOfChar->character);
+            }
         }
         else{
-            listOfCharAux = searchNodeForChar(listOfChar, listOfChar->character);
+            test(stringLength,string,listOfCharAux->position);
         }
         
         if (listOfCharAux != NULL){
@@ -356,11 +384,6 @@ long double expression(char * string){
                 case('-'):
                     listOfNumberAux2->number = listOfNumberAux1->number - listOfNumberAux2->number;
                     break;
-
-                case('^'):
-                    listOfNumberAux2->number = listOfNumberAux1->number * listOfNumberAux2->number;
-                    break;
-
             }
 
             listOfChar = removeNodeForCharByPosition(listOfChar, listOfCharAux->position);
@@ -369,10 +392,11 @@ long double expression(char * string){
         }
         
     }
-
     return listOfNumber->number;
 
 }
+
+
 
 long double inicializeExpression(char * string){
     long double result;
@@ -383,9 +407,9 @@ long double inicializeExpression(char * string){
 
 int main(int argc, char const *argv[])
 {
-    int result = 10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10;
-    char* string = "10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10+10*10-10*10";
-    printf("%s = %Lf porem o result real eh : %d\n", string,  inicializeExpression(string), result);
+    float result = (10+10*10-10);
+    char* string = "(10+10*10-10)";
+    printf("%s = %Lf porem o result real eh : %f\n", string,  inicializeExpression(string), result);
 
     return 0;
 }
